@@ -148,13 +148,14 @@ function profile(req, res, next) {
 function getAll(req, res, next) {
     var query = { $or: [] };
 
-    if (req.query.filter) {
-        query.$or.push({
-            $text: { $search: String(req.query.filter) }
-        });
-    } else {
+    //KEEP COMMENTED TO PREVENT CRASHING THE APP
+    //if (req.query.filter) {
+    //    query.$or.push({
+    //        $text: { $search: String(req.query.filter) }
+    //    });
+    //} else {
         query.$or.push({ content: { $exists: true }});
-    }
+    //}
 
     if (req.query.sticky) {
         query.$or.push({ sticky: true });
@@ -320,11 +321,12 @@ function publicGetThing(req, res, next) {
 function publicGetAll(req, res, next) {
     var query = {};
 
-    if (req.query && req.query.filter) {
-        query = {
-            $text: { $search: String(req.query.filter) }
-        };
-    }
+    // DONT CRASH THE APP DUDE
+    //if (req.query && req.query.filter) {
+    //    query = {
+    //        $text: { $search: String(req.query.filter) }
+    //    };
+    //}
 
     var skip = isNaN(parseInt(req.query.skip)) ? 0 : parseInt(req.query.skip);
     var limit = isNaN(parseInt(req.query.limit)) ? 10 : parseInt(req.query.limit);
