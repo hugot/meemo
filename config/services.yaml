@@ -25,3 +25,9 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Main page
+    App\Controller\IndexController:
+        public: true
+        bind:
+            $app_root_dir: '%kernel.project_dir%'

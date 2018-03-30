@@ -7,3 +7,7 @@ webextension-firefox.xpi
 .users.json
 vendor/
 var/
+db/
+Generated/
+.cache
+Session.vim

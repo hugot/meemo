@@ -84,7 +84,7 @@ gulp.task('firefox_extension', function () {
 
 gulp.task('extensions', ['chrome_extension', 'firefox_extension'], function () {});
 
-gulp.task('default', ['clean', 'html', 'favicon', 'images', 'styles', 'javascript', '3rdparty'], function () {});
+gulp.task('default', ['clean', 'html', 'favicon', 'images', 'styles', 'javascript', '3rdparty', 'php'], function () {});
 
 gulp.task('clean', function () {
     del.sync(['public/']);
