@@ -22,6 +22,11 @@ gulp.task('styles', function () {
         .pipe(gulp.dest('public/'));
 });
 
+gulp.task('php', function () {
+    return gulp.src('frontend/index.php')
+        .pipe(gulp.dest('public/'));
+})
+
 gulp.task('javascript', function () {
     return gulp.src('frontend/js/*.js')
         .pipe(gulp.dest('public/js/'));

@@ -1,7 +1,9 @@
 node_modules/
-public/
 attachments/
+public/
 storage/
 webextension-chrome.zip
 webextension-firefox.xpi
 .users.json
+vendor/
+var/
