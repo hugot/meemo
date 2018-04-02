@@ -31,3 +31,14 @@ services:
         public: true
         bind:
             $app_root_dir: '%kernel.project_dir%'
+
+    App\Repository\ApiKeyRepository:
+        public: true
+        bind:
+            $entityClass: 'App\Entity\ApiKey'
+
+    App\Repository\UserRepository:
+        public: true
+        bind:
+            $entityClass: 'App\Entity\User'
+
