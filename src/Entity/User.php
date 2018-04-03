@@ -32,10 +32,54 @@ class User implements \JsonSerializable
      */
     private $password;
 
-    public function __construct(string $username, string $password)
-    {
+    /**
+     * @ORM\OneToMany(targetEntity="Setting", mappedBy="user", cascade={"persist", "remove"})
+     * @var Setting[]
+     */
+    private $settings;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Thing", mappedBy="user", cascade={"persist", "remove"})
+     * @AG\Generate(add="public", remove="public", get="public")
+     * @var Thing[]
+     */
+    private $things;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Tag", mappedBy="user", cascade={"persist", "remove"})
+     * @AG\Generate(add="public", remove="public", get="public")
+     * @var Tag[]
+     */
+    private $tags;
+
+    public function __construct(
+        string $username,
+        string $password,
+        array $settings = [],
+        array $things = [],
+        array $tags = []
+    ) {
         $this->setUsername($username);
         $this->setPassword($password);
+        $this->setSettings($settings);
+
+        foreach ($things as $thing) {
+            $this->addThing($thing);
+        }
+
+        foreach ($tags as $tag) {
+            $this->addTag($tag);
+        }
+    }
+
+    public function getSettings()
+    {
+        return $this->settings;
+    }
+
+    public function setSettings(array $settings)
+    {
+        $this->settings = $settings;
     }
 
     public function jsonSerialize(): array

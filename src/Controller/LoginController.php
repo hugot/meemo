@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Component\JsonBodyParser;
 use App\Entity\ApiKey;
 use App\Repository\ApiKeyRepository;
 use App\Repository\UserRepository;
@@ -33,16 +34,21 @@ class LoginController
     /* @var EntityManagerInterface */
     private $entity_manager;
 
+    /* @var JsonBodyParser */
+    private $json_parser;
+
     public function __construct(
         UserRepository          $user_repository,
         ApiKeyRepository        $key_repository,
         PasswordHasher          $hasher,
-        EntityManagerInterface  $entity_manager
+        EntityManagerInterface  $entity_manager,
+        JsonBodyParser          $json_parser
     ) {
         $this->user_repository = $user_repository;
         $this->key_repository  = $key_repository;
         $this->hasher          = $hasher;
         $this->entity_manager  = $entity_manager;
+        $this->json_parser     = $json_parser;
     }
 
     /**
@@ -50,15 +56,8 @@ class LoginController
      */
     public function loginAction(Request $request): JsonResponse
     {
-        $body = $request->getContent();
-        if (empty($body) || ($json = json_decode($body, true)) === null) {
-            return new JsonResponse(
-                [
-                    'status'  => 'Bad Request',
-                    'message' => 'Json body expected'
-                ],
-                400
-            );
+        if (($json = $this->json_parser->parse($request)) instanceof JsonResponse) {
+            return $json;
         }
 
         if (($user = $this->user_repository->findOneByUsername($json['username'])) !== null) {
@@ -85,11 +84,24 @@ class LoginController
     }
 
     /**
+     * @Route("/logout")
+     */
+    public function logoutAction(Request $request)
+    {
+        $key = $this->key_repository->findOneByKey($request->query->get(ApiKey::API_KEY_PARAM));
+        $this->entity_manager->remove($key);
+        $this->entity_manager->flush();
+
+        return new JsonResponse([]);
+    }
+
+    /**
      * @Route("/profile")
      */
     public function profileAction(Request $request)
     {
-        $user = $this->key_repository->findOneByKey($request->query->get(ApiKey::API_KEY_PARAM))
+        $user = $this->key_repository
+            ->findOneByKey($request->query->get(ApiKey::API_KEY_PARAM))
             ->getUser();
         return new JsonResponse(
             [

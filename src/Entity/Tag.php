@@ -13,7 +13,7 @@ use Hostnet\Component\AccessorGenerator\Annotation as AG;
 /**
  * @ORM\Entity
  */
-class Tag
+class Tag implements \JsonSerializable
 {
     use Generated\TagMethodsTrait;
 
@@ -34,15 +34,23 @@ class Tag
     private $name;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Thing")
+     * @ORM\ManyToMany(targetEntity="Thing", mappedBy="tags")
      * @AG\Generate(get="public", add="public")
      * @var Thing[]
      */
     private $things;
 
-    public function __construct(string $name, array $things)
+    /**
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="tags")
+     * @ORM\JoinColumn(name="user_username", referencedColumnName="username")
+     * @AG\Generate(add="public", get="public")
+     */
+    private $user;
+
+    public function __construct(string $name, array $things, User $user)
     {
         $this->setName($name);
+        $this->setUser($user);
 
         foreach ($things as $thing) {
             $this->addThing($thing);
@@ -52,5 +60,13 @@ class Tag
     public function getUsage(): int
     {
         return count($this->getThings());
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'name'  => $this->getName(),
+            'usage' => $this->getUsage()
+        ];
     }
 }

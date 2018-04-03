@@ -42,3 +42,12 @@ services:
         bind:
             $entityClass: 'App\Entity\User'
 
+    App\Repository\SettingRepository:
+        public: true
+        bind:
+            $entityClass: 'App\Entity\Setting'
+
+    App\Repository\TagRepository:
+        public: true
+        bind:
+            $entityClass: 'App\Entity\Tag'
