@@ -42,7 +42,7 @@ class AddUserCommand extends Command
     public function execute(InputInterface $input, OutputInterface $output)
     {
         $username = readline('Please provide a username: ');
-        $password = system(
+        $password = exec(
             '/usr/bin/env bash -c "'
             . "read -rsp 'Please provide a password: '"
             . " PASSWORD </dev/tty && echo ". '\"\$PASSWORD\""'
