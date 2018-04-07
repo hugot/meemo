@@ -27,7 +27,7 @@ class Thing implements \JsonSerializable
     private $id;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="text")
      * @AG\Generate(get="public", set="public")
      * @var string
      */
@@ -41,14 +41,18 @@ class Thing implements \JsonSerializable
     private $external_contents;
 
     /**
-     * @ORM\OneToMany(targetEntity="Attachment", mappedBy="thing")
+     * @ORM\OneToMany(targetEntity="Attachment", mappedBy="thing", cascade={"persist", "remove"})
      * @AG\Generate(add="public", remove="public", get="public")
      * @var Attachment[]
      */
     private $attachments;
 
     /**
-     * @ORM\ManyToMany(targetEntity="Tag", mappedBy="things")
+     * @ORM\ManyToMany(targetEntity="Tag", inversedBy="things", cascade={"persist"})
+     * @ORM\JoinTable(name="thing_has_tag",
+     *  joinColumns={ @ORM\JoinColumn(name="thing_id", referencedColumnName="id") },
+     *  inverseJoinColumns={ @ORM\JoinColumn(name="tag_name", referencedColumnName="name") }
+     * )
      * @AG\Generate(add="public", remove="public", get="public")
      * @var Tag[]
      */
@@ -70,7 +74,7 @@ class Thing implements \JsonSerializable
 
     /**
      * @ORM\ManyToOne(targetEntity="User", inversedBy="things")
-     * @ORM\JoinColumn(name="user_username", referencedColumnName="username")
+     * @ORM\JoinColumn(name="user_has_thing", referencedColumnName="username")
      * @AG\Generate(set="private", get="public")
      * @var User
      */
@@ -90,8 +94,23 @@ class Thing implements \JsonSerializable
      */
     private $modified_at;
 
+    /**
+     * @ORM\Column(type="text")
+     * @AG\Generate(get="public", set="public")
+     * @var string
+     */
+    private $rich_content;
+
+    /**
+     * @ORM\Column(type="boolean")
+     * @AG\Generate(get="public", set="public")
+     * @var bool
+     */
+    private $archived;
+
     public function __construct(
         string $content,
+        string $rich_content,
         User   $user,
         array  $tags = [],
         array  $external_contents = [],
@@ -105,6 +124,8 @@ class Thing implements \JsonSerializable
         $this->setCreatedAt(new \DateTime('now'));
         $this->setModifiedAt(new \DateTime('now'));
         $this->setSticky($sticky);
+        $this->setRichContent($rich_content);
+        $this->setArchived(false);
 
         foreach ($tags as $tag) {
             $this->addTag($tag);
@@ -124,25 +145,27 @@ class Thing implements \JsonSerializable
         return [
             '_id'             => $this->getId(),
             'content'         => $this->getContent(),
-            'createdAt'       => $this->getCreatedAt()->getTimestamp(),
-            'modifiedAt'      => $this->getModifiedAt()->getTimestamp(),
+            'createdAt'       => $this->getCreatedAt()->getTimestamp() * 1000,
+            'modifiedAt'      => $this->getModifiedAt()->getTimestamp() * 1000,
             'tags'            => $this->getTags()->toArray(),
             'externalContent' => $this->getExternalContents()->toArray(),
             'attachments'     => $this->getAttachments()->toArray(),
             'public'          => $this->isPublic(),
             // TODO: Implement "shared" fieature
             'shared'          => false,
+            'archived'        => $this->isArchived(),
             'sticky'          => $this->isSticky(),
-            'richContent'     => $this->getContent()
+            'richContent'     => $this->getRichContent()
         ];
     }
 
-    /**
-     * @ORM\Prepersist
-     * @ORM\PreUpdate
-     */
-    private function updateModifiedAt()
+    public function updateModifiedAt()
     {
         $this->setModifiedAt(new \DateTime('now'));
+    }
+
+    public function setTags(array $tags): void
+    {
+        $this->tags = $tags;
     }
 }

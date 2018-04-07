@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Security;
 
+use App\Entity\ApiKey;
 use App\Entity\User;
 use App\Repository\ApiKeyRepository;
 use App\Repository\UserRepository;
@@ -41,9 +42,7 @@ class ApiKeyUserProvider implements UserProviderInterface
     public function loadUserByUsername($username)
     {
         if (($user = $this->user_repository->findOneByUsername($username)) !== null) {
-            if (($key = $this->key_repository->findOneBy([ 'user' => $user ])) !== null
-                && $key->getLastActive() > (new \DateTime('12 hours ago'))
-            ) {
+            if (count($this->activeKeysIn($this->key_repository->findBy([ 'user' => $user ]))) > 0) {
                 return new SymfonyUser(
                     $user->getUsername(),
                     null,
@@ -69,5 +68,14 @@ class ApiKeyUserProvider implements UserProviderInterface
     public function supportsClass($class)
     {
         return SymfonyUser::class == $class;
+    }
+
+    private function activeKeysIn(array $keys): array
+    {
+        $last_active_boundry = new \DateTime('12 hours ago');
+
+        return array_filter($keys, function (ApiKey $key) use ($last_active_boundry) {
+            return $key->getLastActive() > $last_active_boundry;
+        });
     }
 }

@@ -28,4 +28,11 @@ class UserTracker
         )
         ->getUser();
     }
+
+    public function findKeyForRequest(Request $request)
+    {
+        return $this->key_repository->findOneByKey(
+            $request->query->get(ApiKey::API_KEY_PARAM)
+        );
+    }
 }

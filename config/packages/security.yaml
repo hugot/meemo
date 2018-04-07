@@ -11,7 +11,7 @@ security:
         main:
             anonymous: true
 
-            pattern: ^/api/(?!login|users)
+            pattern: ^/api/(?!login|users|public|files/[^/]+)
             stateless: true
             simple_preauth:
                 authenticator: App\Security\ApiKeyAuthenticator

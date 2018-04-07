@@ -23,8 +23,21 @@ class IndexController
     /**
      * @Route("/", name="index")
      */
-    public function indexAction()
+    public function indexAction(): Response
     {
-        return new Response(file_get_contents($this->app_root_dir . '/public/index.html'));
+        return $this->serveFile('public/index.html');
+    }
+
+    /**
+     * @Route("/public/{username}", name="public-index")
+     */
+    public function publicIndexAction(): Response
+    {
+        return $this->serveFile('/public/stream.html');
+    }
+
+    public function serveFile(string $filename): Response
+    {
+        return new Response(file_get_contents($this->app_root_dir . '/' . $filename));
     }
 }

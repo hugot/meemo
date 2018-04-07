@@ -8,13 +8,14 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/api")
+ * @Route("/api/public")
  */
-class UserController
+class PublicThingController
 {
     private $user_repository;
 
@@ -24,17 +25,9 @@ class UserController
     }
 
     /**
-     * @Route("/users")
+     * @Route("/{username}/things")
      */
-    public function getAllUsersAction()
-    {
-        return new JsonResponse($this->user_repository->findAll());
-    }
-
-    /**
-     * @Route("/users/{username}")
-     */
-    public function getUserBynameAction(string $username)
+    public function getAllForUserAction(string $username)
     {
         $user = $this->user_repository->findOneByUsername($username);
 
@@ -48,6 +41,10 @@ class UserController
             );
         }
 
-        return new JsonResponse($user);
+        $criteria = Criteria::create()
+            ->andWhere(Criteria::expr()->eq('public', true))
+            ->orderBy([ 'created_at' => Criteria::DESC ]);
+        
+        return new JsonResponse([ 'things' => $user->getThings()->matching($criteria)->toArray() ]);
     }
 }

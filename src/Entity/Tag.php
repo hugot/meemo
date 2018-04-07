@@ -19,15 +19,7 @@ class Tag implements \JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @AG\Generate(get="public", set="none")
-     * @var int
-     */
-    private $id;
-
-    /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(name="name", type="string", length=100)
      * @AG\Generate(set="private", get="public")
      * @var string
      */
