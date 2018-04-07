@@ -9,6 +9,7 @@ namespace App\Component;
 
 use App\Entity\ApiKey;
 use App\Entity\Attachment;
+use App\Entity\Thing;
 use App\Enum\ContentType;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -26,7 +27,7 @@ class AttachmentAdder
         array $attachments,
         string $content,
         string $username,
-        ApiKey $key = null
+        ?ApiKey $key = null
     ): string {
         foreach ($attachments as $attachment) {
             $content = str_replace(
@@ -45,6 +46,22 @@ class AttachmentAdder
         }
 
         return $content;
+    }
+
+    public function addAttachmentsToThings(array $things, ?ApiKey $key = null): array
+    {
+        return array_map(function (Thing $thing) use ($key) {
+            $thing->setRichContent(
+                $this->addAttachmentsToContent(
+                    $thing->getAttachments()->toArray(),
+                    $thing->getRichContent(),
+                    $thing->getUser()->getUsername(),
+                    $thing->isPublic() ? null : $key
+                )
+            );
+
+            return $thing;
+        }, $things);
     }
 
     private function formatFor(Attachment $attachment): string

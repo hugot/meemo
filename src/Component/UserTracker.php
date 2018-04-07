@@ -23,10 +23,11 @@ class UserTracker
 
     public function findUserForRequest(Request $request)
     {
-        return $this->key_repository->findOneByKey(
-            $request->query->get(ApiKey::API_KEY_PARAM)
-        )
-        ->getUser();
+        if (empty(($key = $request->query->get(ApiKey::API_KEY_PARAM)))) {
+            return null;
+        }
+
+        return $this->key_repository->findOneByKey($key)->getUser();
     }
 
     public function findKeyForRequest(Request $request)

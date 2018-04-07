@@ -19,7 +19,7 @@ class User implements \JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=50)
      * @AG\Generate(set="public", get="public")
      * @var string
      */

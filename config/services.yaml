@@ -56,3 +56,8 @@ services:
         public: true
         bind:
             $entityClass: 'App\Entity\Tag'
+
+    App\Repository\AttachmentRepository:
+        public: true
+        bind:
+            $entityClass: 'App\Entity\Attachment'

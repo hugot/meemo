@@ -12,6 +12,7 @@ use App\Component\FaceLifter;
 use App\Component\JsonBodyParser;
 use App\Component\TagParser;
 use App\Component\UserTracker;
+use App\Entity\ApiKey;
 use App\Entity\Attachment;
 use App\Entity\Tag;
 use App\Entity\Thing;
@@ -58,7 +59,8 @@ class ThingController
      */
     public function getAllAction(Request $request): JsonResponse
     {
-        $user     = $this->user_tracker->findUserForRequest($request);
+        $key      = $this->user_tracker->findKeyForRequest($request);
+        $user     = $key->getUser();
         $archived = false;
         $things   = [];
 
@@ -78,35 +80,24 @@ class ThingController
                 'modified_at' => Criteria::DESC
             ]);
 
-        if (!empty(($filter = $request->query->get('filter')))
-            && ($tag = $this->tag_repository
-                ->findOneBy([ 'name' => preg_replace('/#/', '', $filter, 1) ])) !== null
-        ) {
-            $things = $tag->getThings()->matching($criteria)->toArray();
+        if (!empty(($filter = $request->query->get('filter')))) {
+            $tag = $this->tag_repository
+                ->findOneBy([ 'name' => preg_replace('/#/', '', $filter, 1) ]);
+             
+            if ($tag instanceof Tag) {
+                $things = $tag->getThings()->matching($criteria)->toArray();
+            } else {
+                $things = [];
+            }
         } else {
             $things = $user->getThings()->matching($criteria)->toArray();
         }
 
         return new JsonResponse(
             [
-                'things' => $this->addAttachmentsToThings($things)
+                'things' => $this->attachment_adder->addAttachmentsToThings($things, $key)
             ]
         );
-    }
-
-    private function addAttachmentsToThings(array $things): array
-    {
-        return array_map(function (Thing $thing) {
-            $thing->setRichContent(
-                $this->attachment_adder->addAttachmentsToContent(
-                    $thing->getAttachments()->toArray(),
-                    $thing->getRichContent(),
-                    $thing->getUser()->getUsername()
-                )
-            );
-
-            return $thing;
-        }, $things);
     }
 
     /**

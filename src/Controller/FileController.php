@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Component\UserTracker;
+use App\Entity\User;
 use App\Enum\ContentType;
+use App\Repository\AttachmentRepository;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -25,23 +27,44 @@ class FileController
     /* @var string */
     private $attachment_dir;
 
+    /* @var AttachmentRepository */
+    private $attachment_repository;
+
     public function __construct(
-        UserTracker $user_tracker,
-        string      $app_root_dir
+        UserTracker          $user_tracker,
+        string               $app_root_dir,
+        AttachmentRepository $attachment_repository
     ) {
-        $this->user_tracker   = $user_tracker;
-        $this->attachment_dir = $app_root_dir . '/' . $_ENV['ATTACHMENT_DIR'];
+        $this->user_tracker          = $user_tracker;
+        $this->attachment_dir        = $app_root_dir . '/' . $_ENV['ATTACHMENT_DIR'];
+        $this->attachment_repository = $attachment_repository;
     }
 
     /**
-     * @Route("/files/{username}/{filename}/", name="app-serve-file")
+     * @Route("/files/{username}/{filename}", name="app-serve-file")
      */
     public function serveAction(string $username, string $filename, Request $request)
     {
+        $attachment = $this->attachment_repository->findOneBy([ 'identifier' => $filename ]);
+
         $file_path = $this->attachment_dir . '/' . $username . '/' . $filename;
 
-        if (file_exists($file_path)) {
-            return new BinaryFileResponse($file_path);
+        if ($attachment !== null && file_exists($file_path)) {
+            if ($attachment->getThing()->isPublic()) {
+                return new BinaryFileResponse($file_path);
+            }
+
+            if (($user = $this->user_tracker->findUserForRequest($request)) instanceof User) {
+                return new BinaryFileResponse($file_path);
+            }
+
+            return new JsonResponse(
+                [
+                    'status'  => 'Unauthorized',
+                    'message' => 'You are not authorized to see this resource.'
+                ],
+                401
+            );
         }
         
         return new JsonResponse(

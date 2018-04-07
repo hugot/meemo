@@ -20,12 +20,11 @@ class Attachment implements \JsonSerializable
 
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * @AG\Generate(get="public", set="none")
-     * @var int
+     * @ORM\Column(type="string", length=150)
+     * @AG\Generate(get="public", set="private")
+     * @var string
      */
-    private $id;
+    private $identifier;
 
     /**
      * @ORM\Column(type="string")
@@ -48,12 +47,6 @@ class Attachment implements \JsonSerializable
      */
     private $filename;
 
-    /**
-     * @ORM\Column(type="string")
-     * @AG\Generate(get="public", set="private")
-     * @var string
-     */
-    private $identifier;
 
     public function __construct(
         Thing $thing,

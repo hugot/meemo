@@ -11,6 +11,7 @@ db/
 Generated/
 .cache
 Session.vim
+/files
 
 ###> symfony/web-server-bundle ###
 /.web-server-pid

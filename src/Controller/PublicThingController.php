@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Component\AttachmentAdder;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\Criteria;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,10 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 class PublicThingController
 {
     private $user_repository;
+    private $attachment_adder;
 
-    public function __construct(UserRepository $user_repository)
-    {
-        $this->user_repository = $user_repository;
+    public function __construct(
+        UserRepository  $user_repository,
+        AttachmentAdder $attachment_adder
+    ) {
+        $this->user_repository  = $user_repository;
+        $this->attachment_adder = $attachment_adder;
     }
 
     /**
@@ -45,6 +50,10 @@ class PublicThingController
             ->andWhere(Criteria::expr()->eq('public', true))
             ->orderBy([ 'created_at' => Criteria::DESC ]);
         
-        return new JsonResponse([ 'things' => $user->getThings()->matching($criteria)->toArray() ]);
+        return new JsonResponse([
+            'things' => $this->attachment_adder->addAttachmentsToThings(
+                $user->getThings()->matching($criteria)->toArray()
+            )
+        ]);
     }
 }
