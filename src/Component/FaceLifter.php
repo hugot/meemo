@@ -39,7 +39,8 @@ class FaceLifter
                     return sprintf('[%1$s](#search?%1$s)', $match[0]);
                 },
                 '!https?://\S+!' => function (array $match) {
-                    $headers    = get_headers($match[0]);
+                    $headers    = @get_headers($match[0]);
+                    $headers    = $headers === false ? [] : $headers;
                     $pretty_url = strlen($match[0]) <= self::PRETTY_URL_LENGTH
                         ? $match[0]
                         : substr($match[0], 0, 40) . '...';
