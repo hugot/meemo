@@ -1,7 +1,18 @@
 node_modules/
-public/
 attachments/
+public/
 storage/
 webextension-chrome.zip
 webextension-firefox.xpi
 .users.json
+vendor/
+var/
+db/
+Generated/
+.cache
+Session.vim
+/files
+
+###> symfony/web-server-bundle ###
+/.web-server-pid
+###< symfony/web-server-bundle ###

@@ -22,6 +22,11 @@ gulp.task('styles', function () {
         .pipe(gulp.dest('public/'));
 });
 
+gulp.task('php', function () {
+    return gulp.src('frontend/index.php')
+        .pipe(gulp.dest('public/'));
+})
+
 gulp.task('javascript', function () {
     return gulp.src('frontend/js/*.js')
         .pipe(gulp.dest('public/js/'));
@@ -79,7 +84,7 @@ gulp.task('firefox_extension', function () {
 
 gulp.task('extensions', ['chrome_extension', 'firefox_extension'], function () {});
 
-gulp.task('default', ['clean', 'html', 'favicon', 'images', 'styles', 'javascript', '3rdparty'], function () {});
+gulp.task('default', ['clean', 'html', 'favicon', 'images', 'styles', 'javascript', '3rdparty', 'php'], function () {});
 
 gulp.task('clean', function () {
     del.sync(['public/']);
