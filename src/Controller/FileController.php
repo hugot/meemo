@@ -36,7 +36,7 @@ class FileController
         AttachmentRepository $attachment_repository
     ) {
         $this->user_tracker          = $user_tracker;
-        $this->attachment_dir        = $app_root_dir . '/' . $_ENV['ATTACHMENT_DIR'];
+        $this->attachment_dir        = $app_root_dir . '/' . $_SERVER['ATTACHMENT_DIR'];
         $this->attachment_repository = $attachment_repository;
     }
 
