@@ -151,7 +151,8 @@ class ThingController
         if (($json = $this->json_parser->parse($request)) instanceof JsonResponse) {
             return $json;
         }
-        $user     = $this->user_tracker->findUserForRequest($request);
+        $key      = $this->user_tracker->findKeyForRequest($request);
+        $user     = $key->getUser();
         $criteria = Criteria::create()->andWhere(Criteria::expr()->eq('id', $thing_id));
         $thing    = $user->getThings()->matching($criteria)->first();
 
@@ -195,6 +196,13 @@ class ThingController
 
         $this->entity_manager->persist($thing);
         $this->entity_manager->flush();
+
+        $thing->setRichContent($this->attachment_adder->addAttachmentsToContent(
+            $thing->getAttachments()->toArray(),
+            $thing->getContent(),
+            $user->getUsername(),
+            $key
+        ));
 
         return new JsonResponse([ 'thing' => $thing ], 201);
     }
