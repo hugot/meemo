@@ -35,7 +35,7 @@ class FaceLifter
     {
         return preg_replace_callback_array(
             [
-                '/#\S+/' => function (array $match) {
+                '/#[^\s#]+/' => function (array $match) {
                     return sprintf('[%1$s](#search?%1$s)', $match[0]);
                 },
                 '!https?://\S+!' => function (array $match) {

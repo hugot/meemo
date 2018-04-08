@@ -56,7 +56,7 @@ class TagParser
 
     private function extractTagsFromContent(string $content): array
     {
-        preg_match_all('/#\S+/', $content, $matches);
+        preg_match_all('/#[^\s#]+/', $content, $matches);
 
         return array_pop($matches);
     }
