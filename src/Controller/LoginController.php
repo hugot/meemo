@@ -11,6 +11,7 @@ use App\Component\JsonBodyParser;
 use App\Entity\ApiKey;
 use App\Repository\ApiKeyRepository;
 use App\Repository\UserRepository;
+use App\Security\ApiKeyExpirationChecker;
 use App\Security\PasswordHasher;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -37,18 +38,23 @@ class LoginController
     /* @var JsonBodyParser */
     private $json_parser;
 
+    /* @var ApiKeyExpirationChecker */
+    private $expiration_checker;
+
     public function __construct(
         UserRepository          $user_repository,
         ApiKeyRepository        $key_repository,
         PasswordHasher          $hasher,
         EntityManagerInterface  $entity_manager,
-        JsonBodyParser          $json_parser
+        JsonBodyParser          $json_parser,
+        ApiKeyExpirationChecker $expiration_checker
     ) {
-        $this->user_repository = $user_repository;
-        $this->key_repository  = $key_repository;
-        $this->hasher          = $hasher;
-        $this->entity_manager  = $entity_manager;
-        $this->json_parser     = $json_parser;
+        $this->user_repository    = $user_repository;
+        $this->key_repository     = $key_repository;
+        $this->hasher             = $hasher;
+        $this->entity_manager     = $entity_manager;
+        $this->json_parser        = $json_parser;
+        $this->expiration_checker = $expiration_checker;
     }
 
     /**
@@ -61,9 +67,16 @@ class LoginController
         }
 
         if (($user = $this->user_repository->findOneByUsername($json['username'])) !== null) {
-            if (($key = $this->key_repository->findOneByUser($user)) !== null) {
-                return new JsonResponse($key, 201);
+            // Keep the database clean by removing all expired api keys for the user.
+            // This could be turned into a cron, but that would mean having an
+            // extra installation step.
+            // TODO: See if this functionality can be moved entirely to the ApiKeyExpirationChecker.
+            foreach ($this->key_repository->findBy([ 'user' => $user ]) as $key) {
+                if ($this->expiration_checker->keyIsExpired($key)) {
+                    $this->entity_manager->remove($key);
+                }
             }
+            $this->entity_manager->flush();
 
             if ($this->hasher->verify($json['password'], $user->getPassword())) {
                 $key = new ApiKey(uniqid($user->getUsername(), true), $user);

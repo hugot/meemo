@@ -28,7 +28,7 @@ class UserController
      */
     public function getAllUsersAction()
     {
-        return new JsonResponse($this->user_repository->findAll());
+        return new JsonResponse([ 'users' => $this->user_repository->findAll() ]);
     }
 
     /**
